@@ -6,6 +6,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0]
+
+### Added
+- `isi_distance(a, b, *, interval)`: ISI-distance (Kreuz et al. 2007) between two spike trains over a finite time interval. For each train the instantaneous inter-spike-interval function assigns to time t the length of the ISI that contains t; boundary ISIs are handled with the pyspike edge convention (auxiliary ISI before the first spike is `max(first_spike - t_start, second_ISI)` for N > 1, or `first_spike - t_start` for N == 1; auxiliary ISI after the last spike is `max(t_end - last_spike, last_ISI)` for N > 1, or `t_end - last_spike` for N == 1; empty trains are treated as [t_start, t_end]). The distance is `integral |isi_a(t) - isi_b(t)| / max(isi_a(t), isi_b(t)) dt` normalized by the interval length, giving a value in [0, 1]. The `interval` parameter is required (no default). Validated against pyspike 0.9.0 to floating-point identity (error == 0.0) on all reference cases.
+
 ## [0.5.0]
 
 ### Added

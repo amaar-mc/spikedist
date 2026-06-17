@@ -55,6 +55,42 @@ With this definition the distance between an empty train and a single spike is
 and comparable. Libraries that normalize the empty-versus-single distance to 1
 differ from this by a constant factor.
 
+## ISI-distance
+
+`isi_distance(a, b, *, interval)` computes the time-averaged ISI dissimilarity
+over a finite interval `[t_start, t_end]`.
+
+### ISI function and edge convention
+
+For a train with spikes s_1 < s_2 < ... < s_N the instantaneous ISI at time t
+is the length of the inter-spike interval containing t. At the boundaries:
+
+- **Before the first spike** (t < s_1): auxiliary ISI = `max(s_1 - t_start,
+  s_2 - s_1)` if N > 1, else `s_1 - t_start`.
+- **After the last spike** (t > s_N): auxiliary ISI = `max(t_end - s_N,
+  s_N - s_{N-1})` if N > 1, else `t_end - s_N`.
+- **Empty train**: replaced by auxiliary spikes at `[t_start, t_end]`, giving a
+  constant ISI of `t_end - t_start`.
+
+This convention matches pyspike 0.9.0 (`isi_distance_python` in
+`cython/python_backend.py`) exactly.
+
+### Algorithm
+
+1. Validate and sort both trains; deduplicate (matching pyspike's `np.unique`).
+2. Compute the initial ISIs `nu1`, `nu2` using `_initial_isi`.
+3. Sweep the merged event sequence in O(n + m) time, accumulating the integral
+   of `|nu1 - nu2| / max(nu1, nu2)` over each constant segment.
+4. Divide by the interval length.
+
+### Validation
+
+All reference values were computed with pyspike 0.9.0 and embedded as golden
+constants in `tests/test_isi_distance.py`. The pure-Python implementation
+matches pyspike to floating-point identity (error == 0.0) on all cases:
+identical trains, high-rate vs single spike, two vs four spikes, empty vs
+non-empty, trains with crossing ISIs, and single-spike trains.
+
 ## Schreiber similarity
 
 `schreiber(a, b, *, sigma)` is the cosine similarity of the two trains after

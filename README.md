@@ -8,7 +8,7 @@
 [![CI](https://github.com/amaar-mc/spikedist/actions/workflows/ci.yml/badge.svg)](https://github.com/amaar-mc/spikedist/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-Spike-train distance and similarity metrics in pure Python with zero dependencies. Implements the Victor-Purpura and van Rossum distances and the Schreiber and Hunter-Milton similarities on plain sequences of spike times.
+Spike-train distance and similarity metrics in pure Python with zero dependencies. Implements the Victor-Purpura and van Rossum distances, the ISI-distance, and the Schreiber and Hunter-Milton similarities on plain sequences of spike times.
 
 ## Install
 
@@ -25,15 +25,16 @@ pip install spikedist[fast]
 ## 30-second example
 
 ```python
-from spikedist import victor_purpura, van_rossum, schreiber, hunter_milton
+from spikedist import victor_purpura, van_rossum, isi_distance, schreiber, hunter_milton
 
 a = [0.010, 0.025, 0.090]   # spike times in seconds
 b = [0.012, 0.030, 0.095]
 
-victor_purpura(a, b, cost=100.0)  # edit distance, cost is the q parameter
-van_rossum(a, b, tau=0.012)       # kernel distance, tau is the time constant
-schreiber(a, b, sigma=0.010)      # Gaussian correlation similarity in [0, 1]
-hunter_milton(a, b, tau=0.012)    # nearest-neighbor similarity in (0, 1]
+victor_purpura(a, b, cost=100.0)              # edit distance, cost is the q parameter
+van_rossum(a, b, tau=0.012)                   # kernel distance, tau is the time constant
+isi_distance(a, b, interval=[0.0, 0.1])       # ISI-distance in [0, 1]
+schreiber(a, b, sigma=0.010)                  # Gaussian correlation similarity in [0, 1]
+hunter_milton(a, b, tau=0.012)                # nearest-neighbor similarity in (0, 1]
 ```
 
 Spike times can be Python lists, tuples, or any sequence of numbers, including
@@ -51,7 +52,9 @@ compiled extension:
 - `pymuvr` is a fast multi-unit van Rossum implementation, but is a C++ extension
   and requires NumPy.
 - `pyspike` is excellent for ISI-distance, SPIKE-distance, and SPIKE-synchrony,
-  but does not implement Victor-Purpura or van Rossum.
+  but does not implement Victor-Purpura or van Rossum. `spikedist` now also
+  implements the ISI-distance matching pyspike's convention, with zero
+  dependencies and no NumPy requirement.
 
 `spikedist` is a small, typed, dependency-free package for when you just want the
 distance between two spike trains.
@@ -88,6 +91,34 @@ With this normalization the distance between an empty train and a single spike i
 
 Both distances are true metrics: non-negative, symmetric, zero only between equal
 trains, and they satisfy the triangle inequality. These properties are tested.
+
+### ISI-distance
+
+`isi_distance(a, b, *, interval)` measures the dissimilarity between two spike
+trains using their instantaneous inter-spike-interval (ISI) functions. At each
+time t the ISI function gives the length of the ISI that contains t. Boundary
+intervals use an auxiliary ISI: before the first spike in a train with N > 1
+it is `max(first_spike - t_start, second_ISI)`; for a single-spike train it is
+`first_spike - t_start`. After the last spike in a train with N > 1 it is
+`max(t_end - last_spike, last_ISI)`; for a single-spike train it is
+`t_end - last_spike`. An empty train is treated as two auxiliary spikes at
+`t_start` and `t_end`, giving a constant ISI of `t_end - t_start`.
+
+The pointwise dissimilarity and time-averaged distance are
+
+```
+I(t) = |isi_a(t) - isi_b(t)| / max(isi_a(t), isi_b(t))
+D_I  = (1 / (t_end - t_start)) * integral_{t_start}^{t_end} I(t) dt
+```
+
+The result lies in `[0, 1]`. The `interval` parameter `[t_start, t_end]` is
+required and has no default value. The algorithm runs in O(n + m) time.
+
+The edge convention matches pyspike exactly, validated to floating-point
+identity (error == 0.0) on all reference cases from pyspike 0.9.0.
+
+Reference: Kreuz T, Haas JS, Morelli A, Abarbanel HDI, Politi A (2007),
+"Measuring spike train synchrony," J Neurosci Methods 165:151-161.
 
 ### Multi-unit van Rossum
 
@@ -146,7 +177,7 @@ is simply not available.
 
 ## Roadmap
 
-- Additional spike-train metrics (ISI-distance, SPIKE-distance).
+- Additional spike-train metrics (SPIKE-distance, SPIKE-synchrony).
 
 ## Testing
 

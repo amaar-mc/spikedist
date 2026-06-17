@@ -3,6 +3,7 @@
 import contextlib
 
 from .hunter_milton import hunter_milton
+from .isi_distance import isi_distance
 from .multiunit import van_rossum_multiunit
 from .pairwise import pairwise
 from .schreiber import schreiber
@@ -11,6 +12,7 @@ from .victor_purpura import victor_purpura
 
 __all__ = [
     "hunter_milton",
+    "isi_distance",
     "pairwise",
     "schreiber",
     "van_rossum",
@@ -18,7 +20,7 @@ __all__ = [
     "van_rossum_multiunit",
     "victor_purpura",
 ]
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 # ``van_rossum_matrix`` is available only when NumPy is installed
 # (``pip install spikedist[fast]``). Import it lazily so the package
