@@ -3,7 +3,7 @@
 [![CI](https://github.com/amaar-mc/spikedist/actions/workflows/ci.yml/badge.svg)](https://github.com/amaar-mc/spikedist/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-Spike-train distance metrics in pure Python with zero dependencies. Implements the Victor-Purpura and van Rossum distances on plain sequences of spike times.
+Spike-train distance and similarity metrics in pure Python with zero dependencies. Implements the Victor-Purpura and van Rossum distances and the Schreiber and Hunter-Milton similarities on plain sequences of spike times.
 
 ## Install
 
@@ -14,13 +14,15 @@ pip install spikedist
 ## 30-second example
 
 ```python
-from spikedist import victor_purpura, van_rossum
+from spikedist import victor_purpura, van_rossum, schreiber, hunter_milton
 
 a = [0.010, 0.025, 0.090]   # spike times in seconds
 b = [0.012, 0.030, 0.095]
 
 victor_purpura(a, b, cost=100.0)  # edit distance, cost is the q parameter
 van_rossum(a, b, tau=0.012)       # kernel distance, tau is the time constant
+schreiber(a, b, sigma=0.010)      # Gaussian correlation similarity in [0, 1]
+hunter_milton(a, b, tau=0.012)    # nearest-neighbor similarity in (0, 1]
 ```
 
 Spike times can be Python lists, tuples, or any sequence of numbers, including
@@ -70,15 +72,41 @@ With this normalization the distance between an empty train and a single spike i
 `sqrt(0.5)`, and as `tau` grows large the distance approaches
 `abs(len(a) - len(b)) / sqrt(2)`.
 
-Both functions are true metrics: non-negative, symmetric, zero only between equal
+Both distances are true metrics: non-negative, symmetric, zero only between equal
 trains, and they satisfy the triangle inequality. These properties are tested.
+
+### Schreiber similarity
+
+`schreiber(a, b, *, sigma)` convolves each train with a Gaussian of width `sigma`
+and returns the cosine similarity of the filtered signals, in `[0, 1]`. It is 1
+for identical trains.
+
+### Hunter-Milton similarity
+
+`hunter_milton(a, b, *, tau)` scores each spike by `exp(-dt / tau)` to its nearest
+neighbor in the other train and averages over both trains, giving a value in
+`(0, 1]`. It is 1 for identical trains.
+
+By convention both similarities treat two empty trains as identical (1.0) and a
+non-empty train against an empty one as fully dissimilar (0.0).
+
+### Pairwise matrices
+
+`pairwise(trains, metric)` builds the full matrix of any metric over a list of
+trains. Parameterize the metric with `functools.partial`:
+
+```python
+from functools import partial
+from spikedist import pairwise, van_rossum
+
+pairwise(trains, partial(van_rossum, tau=0.01))
+```
 
 ## Roadmap
 
-- Schreiber correlation measure and Hunter-Milton similarity.
 - Multi-unit van Rossum.
 - Fast O(n) van Rossum via the Houghton-Kreuz markage recursion.
-- Pairwise distance matrices and an optional NumPy fast path.
+- An optional NumPy fast path for large pairwise computations.
 
 ## Testing
 

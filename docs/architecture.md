@@ -55,6 +55,34 @@ With this definition the distance between an empty train and a single spike is
 and comparable. Libraries that normalize the empty-versus-single distance to 1
 differ from this by a constant factor.
 
+## Schreiber similarity
+
+`schreiber(a, b, *, sigma)` is the cosine similarity of the two trains after
+convolution with a Gaussian of standard deviation `sigma`. The Gaussian inner
+product reduces to a closed form, so with `K(d) = exp(-d^2 / (4 * sigma^2))` and
+`S(x, y) = sum over spike pairs K(xi - yj)` the similarity is
+
+```
+S(a, b) / sqrt(S(a, a) * S(b, b))
+```
+
+Cauchy-Schwarz bounds this by 1; a tiny floating-point overshoot is clamped. Two
+empty trains are defined as similarity 1.0 and a single empty train as 0.0.
+
+## Hunter-Milton similarity
+
+`hunter_milton(a, b, *, tau)` scores each spike by `exp(-dt / tau)` where `dt` is
+the distance to its nearest neighbor in the other train, averages that over one
+train, and then averages the two directions. Nearest neighbors are found by
+binary search on the sorted target train, so the cost is O((n + m) log m). The
+empty-train conventions match the Schreiber measure.
+
+## Pairwise matrices
+
+`pairwise(trains, metric)` evaluates a caller-supplied metric over every ordered
+pair of trains and returns a list of rows. It assumes nothing about the metric,
+so it makes no symmetry shortcut; the cost is O(n^2) metric calls.
+
 ## Why pure Python
 
 The two metrics are short, well-specified algorithms. Implementing them without

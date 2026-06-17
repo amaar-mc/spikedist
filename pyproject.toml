@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "spikedist"
-version = "0.1.0"
-description = "Spike-train distance metrics (Victor-Purpura, van Rossum) in pure Python with zero dependencies."
+version = "0.2.0"
+description = "Spike-train distance and similarity metrics (Victor-Purpura, van Rossum, Schreiber, Hunter-Milton) in pure Python with zero dependencies."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }

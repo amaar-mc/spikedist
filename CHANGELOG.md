@@ -7,10 +7,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Planned
-- Schreiber correlation measure and Hunter-Milton similarity.
 - Multi-unit van Rossum.
 - Fast O(n) van Rossum via the Houghton-Kreuz markage recursion.
-- Pairwise distance matrices and an optional NumPy fast path.
+- An optional NumPy fast path for large pairwise computations.
+
+## [0.2.0]
+
+### Added
+- `schreiber(a, b, *, sigma)`: Gaussian correlation similarity in [0, 1].
+- `hunter_milton(a, b, *, tau)`: nearest-neighbor similarity in (0, 1].
+- `pairwise(trains, metric)`: full matrix of any metric over a list of trains.
 
 ## [0.1.0]
 
