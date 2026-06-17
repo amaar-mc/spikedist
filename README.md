@@ -83,6 +83,15 @@ With this normalization the distance between an empty train and a single spike i
 Both distances are true metrics: non-negative, symmetric, zero only between equal
 trains, and they satisfy the triangle inequality. These properties are tested.
 
+### Multi-unit van Rossum
+
+`van_rossum_multiunit(a, b, *, tau, c)` compares two labeled populations of spike trains,
+each given as a mapping from unit label to that unit's train. The parameter `c` in
+`[0, 1]` sets how much spikes of different units interact: `c = 0` treats the units as
+independent (the Euclidean combination of the per-unit distances), `c = 1` ignores the
+labels (the pooled van Rossum distance), and a single unit reduces to `van_rossum`. It
+reuses the O(n + m) markage cross-sum.
+
 ### Schreiber similarity
 
 `schreiber(a, b, *, sigma)` convolves each train with a Gaussian of width `sigma`

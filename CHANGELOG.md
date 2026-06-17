@@ -7,8 +7,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Planned
-- Multi-unit van Rossum.
 - An optional NumPy fast path for large pairwise computations.
+
+## [0.4.0]
+
+### Added
+- `van_rossum_multiunit(a, b, *, tau, c)`: multi-unit (population) van Rossum distance over labeled spike trains, with a cross-unit interaction parameter `c`. At `c = 0` it is the Euclidean combination of per-unit distances; at `c = 1` it equals the pooled van Rossum distance; with a single unit it equals `van_rossum`. Pure Python, reusing the O(n + m) markage cross-sum.
 
 ## [0.3.0]
 
