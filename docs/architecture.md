@@ -83,9 +83,19 @@ empty-train conventions match the Schreiber measure.
 pair of trains and returns a list of rows. It assumes nothing about the metric,
 so it makes no symmetry shortcut; the cost is O(n^2) metric calls.
 
+## NumPy fast path (optional)
+
+`van_rossum_numpy.van_rossum_matrix(trains, *, tau)` computes the N x N
+pairwise van Rossum distance matrix using NumPy broadcasting on the cross-kernel
+sums. It replaces the O(n*m) pure-Python merge sweep with a vectorized outer
+difference, which is faster for moderate to large trains. Self-sums are still
+computed via the O(n) pure-Python markage recursion (one per train, not per
+pair). The module is only imported when NumPy is present; the rest of the
+package has no dependency on it.
+
 ## Why pure Python
 
-The two metrics are short, well-specified algorithms. Implementing them without
-NumPy keeps installation trivial and the package usable anywhere. A NumPy fast
-path for large pairwise computations is planned as an optional extra, never a
+The core metrics are short, well-specified algorithms. Implementing them without
+NumPy keeps installation trivial and the package usable anywhere. NumPy is
+available as an optional extra (`pip install spikedist[fast]`), never a
 hard requirement.

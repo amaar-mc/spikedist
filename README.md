@@ -16,6 +16,12 @@ Spike-train distance and similarity metrics in pure Python with zero dependencie
 pip install spikedist
 ```
 
+For the optional NumPy fast path:
+
+```sh
+pip install spikedist[fast]
+```
+
 ## 30-second example
 
 ```python
@@ -119,11 +125,28 @@ from spikedist import pairwise, van_rossum
 pairwise(trains, partial(van_rossum, tau=0.01))
 ```
 
+### NumPy fast path (optional)
+
+When NumPy is installed (`pip install spikedist[fast]`), `van_rossum_matrix`
+computes the full N x N pairwise van Rossum distance matrix using NumPy
+broadcasting on the cross-kernel sums. It is faster than N^2 calls to
+`van_rossum` for moderate to large N and returns numerically identical results.
+
+```python
+from spikedist import van_rossum_matrix
+
+trains = [[0.0, 0.1], [0.05, 0.2], [0.3]]
+matrix = van_rossum_matrix(trains, tau=0.01)
+# matrix[i][j] == van_rossum(trains[i], trains[j], tau=0.01)
+```
+
+NumPy remains strictly optional. The package imports and all other functions
+work with zero dependencies when NumPy is not installed, and `van_rossum_matrix`
+is simply not available.
+
 ## Roadmap
 
-- Multi-unit van Rossum.
-- Fast O(n) van Rossum via the Houghton-Kreuz markage recursion.
-- An optional NumPy fast path for large pairwise computations.
+- Additional spike-train metrics (ISI-distance, SPIKE-distance).
 
 ## Testing
 

@@ -6,8 +6,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Planned
-- An optional NumPy fast path for large pairwise computations.
+## [0.5.0]
+
+### Added
+- `van_rossum_matrix(trains, *, tau)`: NumPy-backed pairwise van Rossum distance matrix. Computes the full N x N matrix for a list of spike trains using NumPy broadcasting on the cross-kernel sums, which is faster than N^2 calls to `van_rossum` for moderate to large N. Results are numerically identical to `pairwise(trains, partial(van_rossum, tau=tau))` on all off-diagonal entries (tolerance 1e-9); diagonal entries are exactly 0.0.
+- `fast` optional-dependency extra: `pip install spikedist[fast]` installs `numpy>=1.21`. NumPy remains strictly optional; the package imports and runs with zero dependencies when NumPy is not installed, and `van_rossum_matrix` is simply not available.
 
 ## [0.4.0]
 

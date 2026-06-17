@@ -1,5 +1,7 @@
 """Spike-train distance and similarity metrics in pure Python with zero dependencies."""
 
+import contextlib
+
 from .hunter_milton import hunter_milton
 from .multiunit import van_rossum_multiunit
 from .pairwise import pairwise
@@ -12,7 +14,14 @@ __all__ = [
     "pairwise",
     "schreiber",
     "van_rossum",
+    "van_rossum_matrix",
     "van_rossum_multiunit",
     "victor_purpura",
 ]
-__version__ = "0.4.0"
+__version__ = "0.5.0"
+
+# ``van_rossum_matrix`` is available only when NumPy is installed
+# (``pip install spikedist[fast]``). Import it lazily so the package
+# still loads with zero dependencies.
+with contextlib.suppress(ImportError):
+    from .van_rossum_numpy import van_rossum_matrix
