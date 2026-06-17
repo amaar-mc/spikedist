@@ -7,4 +7,4 @@ from .van_rossum import van_rossum
 from .victor_purpura import victor_purpura
 
 __all__ = ["hunter_milton", "pairwise", "schreiber", "van_rossum", "victor_purpura"]
-__version__ = "0.2.0"
+__version__ = "0.3.0"

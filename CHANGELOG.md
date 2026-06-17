@@ -8,8 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Planned
 - Multi-unit van Rossum.
-- Fast O(n) van Rossum via the Houghton-Kreuz markage recursion.
 - An optional NumPy fast path for large pairwise computations.
+
+## [0.3.0]
+
+### Changed
+- `van_rossum` now computes its kernel sums in O(n + m) time using the Houghton-Kreuz markage recursion instead of the naive O(n*m) double loop. Results are unchanged; a property test checks the fast path against the naive reference across random trains.
 
 ## [0.2.0]
 

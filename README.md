@@ -73,6 +73,9 @@ Using the closed form of the kernel inner products,
 D^2 = 0.5 * (Saa + Sbb - 2 * Sab),  Sxy = sum over spike pairs exp(-|xi - yj| / tau)
 ```
 
+The kernel sums are computed in O(n + m) time using the Houghton-Kreuz markage
+recursion rather than the naive O(n*m) double loop.
+
 With this normalization the distance between an empty train and a single spike is
 `sqrt(0.5)`, and as `tau` grows large the distance approaches
 `abs(len(a) - len(b)) / sqrt(2)`.
