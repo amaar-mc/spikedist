@@ -19,7 +19,10 @@ SIGMA = 0.7
 @given(trains)
 def test_self_distance_is_zero(a: list[float]) -> None:
     assert victor_purpura(a, a, cost=COST) == 0.0
-    assert van_rossum(a, a, tau=TAU) == pytest.approx(0.0, abs=1e-9)
+    # van_rossum's self-distance is mathematically zero, but the self and cross kernel
+    # sums are accumulated in different orders, so it reaches zero only to within
+    # floating-point error.
+    assert van_rossum(a, a, tau=TAU) == pytest.approx(0.0, abs=1e-6)
 
 
 @given(trains)
