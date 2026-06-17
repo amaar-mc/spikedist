@@ -8,7 +8,7 @@
 [![CI](https://github.com/amaar-mc/spikedist/actions/workflows/ci.yml/badge.svg)](https://github.com/amaar-mc/spikedist/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-Spike-train distance and similarity metrics in pure Python with zero dependencies. Implements the Victor-Purpura and van Rossum distances, the ISI-distance, and the Schreiber and Hunter-Milton similarities on plain sequences of spike times.
+Spike-train distance and similarity metrics in pure Python with zero dependencies. Implements the Victor-Purpura and van Rossum distances, the ISI-distance, the SPIKE-distance, and the Schreiber and Hunter-Milton similarities on plain sequences of spike times.
 
 ## Install
 
@@ -25,7 +25,7 @@ pip install spikedist[fast]
 ## 30-second example
 
 ```python
-from spikedist import victor_purpura, van_rossum, isi_distance, schreiber, hunter_milton
+from spikedist import victor_purpura, van_rossum, isi_distance, spike_distance, schreiber, hunter_milton
 
 a = [0.010, 0.025, 0.090]   # spike times in seconds
 b = [0.012, 0.030, 0.095]
@@ -33,6 +33,7 @@ b = [0.012, 0.030, 0.095]
 victor_purpura(a, b, cost=100.0)              # edit distance, cost is the q parameter
 van_rossum(a, b, tau=0.012)                   # kernel distance, tau is the time constant
 isi_distance(a, b, interval=[0.0, 0.1])       # ISI-distance in [0, 1]
+spike_distance(a, b, interval=[0.0, 0.1])     # SPIKE-distance in [0, 1]
 schreiber(a, b, sigma=0.010)                  # Gaussian correlation similarity in [0, 1]
 hunter_milton(a, b, tau=0.012)                # nearest-neighbor similarity in (0, 1]
 ```
@@ -53,8 +54,8 @@ compiled extension:
   and requires NumPy.
 - `pyspike` is excellent for ISI-distance, SPIKE-distance, and SPIKE-synchrony,
   but does not implement Victor-Purpura or van Rossum. `spikedist` now also
-  implements the ISI-distance matching pyspike's convention, with zero
-  dependencies and no NumPy requirement.
+  implements both the ISI-distance and the SPIKE-distance matching pyspike's
+  conventions exactly, with zero dependencies and no NumPy requirement.
 
 `spikedist` is a small, typed, dependency-free package for when you just want the
 distance between two spike trains.
@@ -120,6 +121,39 @@ identity (error == 0.0) on all reference cases from pyspike 0.9.0.
 Reference: Kreuz T, Haas JS, Morelli A, Abarbanel HDI, Politi A (2007),
 "Measuring spike train synchrony," J Neurosci Methods 165:151-161.
 
+### SPIKE-distance
+
+`spike_distance(a, b, *, interval)` measures the dissimilarity between two spike
+trains by tracking, at each time t, how far the nearest preceding and following
+spikes in each train are from the spikes in the other train, weighted by the local
+mean inter-spike-interval context. The resulting time-resolved profile is
+piecewise-linear; the scalar SPIKE-distance is its time-average over the interval.
+
+At each time t lying in the ISI `(t_p, t_f)` of train 1, the local spike-time
+distance is interpolated linearly between `dt_p` (distance from the preceding
+spike to the nearest spike in train 2) and `dt_f` (distance from the following
+spike to the nearest spike in train 2):
+
+```
+s_1(t) = (dt_p * (t_f - t) + dt_f * (t - t_p)) / isi_1
+```
+
+and symmetrically for train 2. The instantaneous value is
+
+```
+S(t)  = 0.5 * (s_1(t) * isi_2 + s_2(t) * isi_1) / mean_isi^2
+D_S   = (1 / (t_end - t_start)) * integral_{t_start}^{t_end} S(t) dt
+```
+
+The result lies in `[0, 1]`: 0 for identical trains. The `interval` parameter
+`[t_start, t_end]` is required and has no default value.
+
+The edge convention matches pyspike exactly, validated to floating-point
+identity (max error 5.6e-17, one ULP) on all reference cases from pyspike 0.9.0.
+
+Reference: Kreuz T, Chicharro D, Houghton C, Andrzejak RG, Mormann F (2013),
+"Monitoring spike train synchrony," J Neurophysiol 109:1457-1472.
+
 ### Multi-unit van Rossum
 
 `van_rossum_multiunit(a, b, *, tau, c)` compares two labeled populations of spike trains,
@@ -177,7 +211,7 @@ is simply not available.
 
 ## Roadmap
 
-- Additional spike-train metrics (SPIKE-distance, SPIKE-synchrony).
+- Additional spike-train metrics (SPIKE-synchrony).
 
 ## Testing
 

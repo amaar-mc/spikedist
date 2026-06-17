@@ -6,6 +6,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.7.0]
+
+### Added
+- `spike_distance(a, b, *, interval)`: SPIKE-distance (Kreuz et al. 2013) between two spike trains over a finite time interval. At each time t the SPIKE-distance profile linearly interpolates, within each inter-spike interval of each train, the distance from the bounding spikes to the nearest spike in the other train, normalised by the local mean ISI. The scalar distance is the time-average of this piecewise-linear profile. Edge convention matches pyspike exactly: for each train auxiliary positions are extrapolated one ISI beyond the first and last spike (min/max of t_start/t_end and the extrapolated position for N > 1, or the interval edge for N == 1); the leading ISI is max(s_1 - t_start, s_2 - s_1) for N > 1 or s_1 - t_start for N == 1; the trailing ISI is max(t_end - s_N, s_N - s_{N-1}) for N > 1 or t_end - s_N for N == 1; empty trains are treated as [t_start, t_end]. The `interval` parameter is required (no default). Validated against pyspike 0.9.0 to floating-point identity (max error 5.6e-17, i.e. one ULP) on all reference cases.
+
 ## [0.6.0]
 
 ### Added

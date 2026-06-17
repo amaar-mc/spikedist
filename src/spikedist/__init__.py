@@ -7,6 +7,7 @@ from .isi_distance import isi_distance
 from .multiunit import van_rossum_multiunit
 from .pairwise import pairwise
 from .schreiber import schreiber
+from .spike_distance import spike_distance
 from .van_rossum import van_rossum
 from .victor_purpura import victor_purpura
 
@@ -15,12 +16,13 @@ __all__ = [
     "isi_distance",
     "pairwise",
     "schreiber",
+    "spike_distance",
     "van_rossum",
     "van_rossum_matrix",
     "van_rossum_multiunit",
     "victor_purpura",
 ]
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 # ``van_rossum_matrix`` is available only when NumPy is installed
 # (``pip install spikedist[fast]``). Import it lazily so the package

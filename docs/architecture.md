@@ -91,6 +91,92 @@ matches pyspike to floating-point identity (error == 0.0) on all cases:
 identical trains, high-rate vs single spike, two vs four spikes, empty vs
 non-empty, trains with crossing ISIs, and single-spike trains.
 
+## SPIKE-distance
+
+`spike_distance(a, b, *, interval)` computes the time-averaged SPIKE-distance
+profile over a finite interval `[t_start, t_end]`.
+
+### Profile definition
+
+For each train, at any time t that lies in an ISI `(t_p, t_f)` of that train,
+the local spike-time distance is the linear interpolation
+
+```
+s(t) = (dt_p * (t_f - t) + dt_f * (t - t_p)) / isi
+```
+
+where `dt_p` is the distance from the preceding spike to the nearest spike in
+the other train, and `dt_f` is the same for the following spike. The nearest
+spike is located via `_get_min_dist`, which searches the sorted reference train
+with early exit and includes the auxiliary boundary positions.
+
+The instantaneous SPIKE-distance is
+
+```
+S(t) = 0.5 * (s_1(t) * isi_2 + s_2(t) * isi_1) / mean_isi^2
+```
+
+where `mean_isi = 0.5 * (isi_1 + isi_2)`. The profile is piecewise-linear:
+within each segment between consecutive event times `s_i(t)` is linear in t, so
+`S(t)` is also linear (the segment start and end values differ in general). The
+scalar distance is
+
+```
+D_S = (1 / (t_end - t_start)) * integral_{t_start}^{t_end} S(t) dt
+```
+
+computed as a trapezoidal sum over the segments.
+
+### Edge convention
+
+The convention matches pyspike 0.9.0 (`spike_distance_python` in
+`cython/python_backend.py`) exactly.
+
+For each train with N spikes `s_1 < ... < s_N`:
+
+- **Auxiliary boundary positions** (used as the start/end anchors in
+  `_get_min_dist` to define nearest-neighbor distances for spikes near the
+  interval edges):
+  - `aux_before = min(t_start, s_1 - (s_2 - s_1))` if N > 1, else `t_start`.
+  - `aux_after  = max(t_end,   s_N + (s_N - s_{N-1}))` if N > 1, else `t_end`.
+  These extrapolate one ISI beyond the train, so the "nearest neighbor" of a
+  spike near the boundary is not artificially biased toward the edge.
+
+- **Leading ISI** (for a train whose first spike is after `t_start`):
+  `max(s_1 - t_start, s_2 - s_1)` if N > 1, or `s_1 - t_start` if N == 1.
+
+- **Trailing ISI** (after the last spike):
+  `max(t_end - s_N, s_N - s_{N-1})` if N > 1, or `t_end - s_N` if N == 1.
+
+- **Empty train**: replaced by auxiliary spikes at `[t_start, t_end]`, matching
+  pyspike's `get_spikes_non_empty`. The resulting N=2 "train" has `aux_before =
+  t_start`, `aux_after = t_end`, leading ISI `t_end - t_start`.
+
+- **Coincident spikes** (same time in both trains): the profile value is defined
+  as 0.0 at the event, matching pyspike.
+
+### Algorithm
+
+1. Validate and sort both trains; deduplicate (matching pyspike's `np.unique`).
+2. Compute auxiliary boundary positions for each train.
+3. Initialize `t_p`, `t_f`, `dt_p`, `dt_f`, `isi`, and `s` for both trains at
+   `t_start`.
+4. Sweep the merged event sequence in O(n + m) time. At each event:
+   - Compute `y_seg_end` from `_dist_at_t` (end value of the current segment).
+   - Accumulate the trapezoidal area `(event_t - prev_t) * 0.5 * (y_start + y_end)`.
+   - Advance indices and recompute `dt_f`, `isi`, `s` for the next segment.
+5. Add the final segment from the last event to `t_end`.
+6. Divide the accumulated integral by `t_end - t_start`.
+
+### Validation
+
+All reference values were computed with pyspike 0.9.0 and embedded as golden
+constants in `tests/test_spike_distance.py`. The pure-Python implementation
+matches pyspike to floating-point identity (max error 5.6e-17, one ULP) on all
+cases: identical trains, single differing spike, high rate vs single, empty vs
+non-empty, crossing spikes, two vs four spikes, single-spike trains, and both
+empty.
+
 ## Schreiber similarity
 
 `schreiber(a, b, *, sigma)` is the cosine similarity of the two trains after
