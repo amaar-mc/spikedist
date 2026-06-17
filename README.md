@@ -1,5 +1,10 @@
 # spikedist
 
+<p align="center">
+  <img src="assets/logo.png" alt="spikedist logo" width="160">
+</p>
+
+[![PyPI](https://img.shields.io/pypi/v/spikedist)](https://pypi.org/project/spikedist/)
 [![CI](https://github.com/amaar-mc/spikedist/actions/workflows/ci.yml/badge.svg)](https://github.com/amaar-mc/spikedist/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
